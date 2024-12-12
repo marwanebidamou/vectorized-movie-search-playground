@@ -2,7 +2,7 @@ import express, { Application } from 'express';
 import morgan from 'morgan';
 import { PORT } from './config/env.config';
 import router from './routes/app.routes';
-import { connectToDatabase } from './config/db.config';
+import connectDB from './config/db.config';
 
 const app: Application = express();
 
@@ -14,7 +14,7 @@ app.use("/api", router);
 
 // 404 Not Found Middleware
 app.use((req, res, next) => {
-    res.status(404).json({ error: 'Resource not found' }); 
+    res.status(404).json({ error: 'Resource not found' });
 });
 
 // Error middleware
@@ -22,7 +22,9 @@ app.use((error, req, res, next) => {
     res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(PORT, async () => {
-    await connectToDatabase();
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+
+connectDB().then(() => {
+    app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
+}).catch(error => console.error("An error occuring when attempting to connect to mongodb database"));
